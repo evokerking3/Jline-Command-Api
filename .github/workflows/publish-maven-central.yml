@@ -1,0 +1,59 @@
+name: Publish to Maven Central
+
+on:
+  push:
+    tags:
+      - 'v*'  # Trigger on tags like v1.0.0
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+      
+      - name: Set up GPG
+        run: |
+          mkdir -p ~/.gnupg
+          echo "${{ secrets.GPG_SIGNING_KEY }}" | base64 -d | gpg --import --no-tty --batch --yes
+      
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      
+      - name: Update version in build.gradle.kts
+        run: |
+          sed -i 's/version = ".*/version = "${{ steps.version.outputs.VERSION }}"/' command-api/build.gradle.kts
+      
+      - name: Build
+        run: gradle build -p command-api
+      
+      - name: Publish to Maven Central
+        run: gradle publish -p command-api
+        env:
+          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+          GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
+          GPG_SIGNING_PASSWORD: ${{ secrets.GPG_SIGNING_PASSWORD }}
+      
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ steps.version.outputs.VERSION }}
+          body: |
+            Published to Maven Central as: `dev.evokerking:command-api:${{ steps.version.outputs.VERSION }}`
+            
+            View on Maven Central: https://mvnrepository.com/artifact/dev.evokerking/command-api
+          draft: false
+          prerelease: false
