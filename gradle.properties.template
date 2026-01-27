@@ -1,0 +1,34 @@
+# Gradle Properties Template for Maven Central Publishing
+# 
+# Copy this file to ~/.gradle/gradle.properties and fill in your credentials
+# OR set environment variables before publishing
+#
+# DO NOT commit credentials to version control!
+
+# ============ JVM Settings ============
+org.gradle.jvmargs=-Dorg.gradle.internal.http.socketTimeout=60000
+org.gradle.internal.publish.checksums.insecure=true
+
+# ============ Maven Central (Sonatype) Credentials ============
+# Set these OR use environment variables: MAVEN_USERNAME, MAVEN_PASSWORD
+mavenUsername=YOUR_SONATYPE_USERNAME
+mavenPassword=YOUR_SONATYPE_PASSWORD
+
+# ============ GPG Signing Configuration ============
+# Option 1: Use environment variables (recommended)
+# GPG_SIGNING_KEY and GPG_SIGNING_PASSWORD
+#
+# Option 2: Use local GPG command (requires GPG installed)
+# signing.keyId=LAST_8_CHARS_OF_KEY_ID
+# signing.password=YOUR_GPG_PASSPHRASE
+# signing.secretKeyRingFile=/home/user/.gnupg/secring.gpg
+#
+# Option 3: Base64 encoded key in properties
+# signing.key=BASE64_ENCODED_GPG_KEY
+# signing.password=YOUR_GPG_PASSPHRASE
+
+# For GitHub Actions, these should be set as repository secrets:
+# - MAVEN_USERNAME
+# - MAVEN_PASSWORD
+# - GPG_SIGNING_KEY (base64 encoded)
+# - GPG_SIGNING_PASSWORD

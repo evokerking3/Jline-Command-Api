@@ -1,0 +1,294 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║           Maven Central Publishing - Files and Structure                   ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+CONFIGURATION FILES
+═══════════════════════════════════════════════════════════════════════════
+
+✓ command-api/build.gradle.kts
+  - Maven Publish Plugin configuration
+  - Signing Plugin configuration  
+  - POM metadata (groupId, artifactId, version, licenses, developers, SCM)
+  - Repository definitions (Sonatype OSS, local test)
+  - GPG key configuration (environment variables or local GPG)
+  
+  Key Features:
+  • groupId: dev.evokerking
+  • artifactId: command-api
+  • version: 1.0.0
+  • Generates: JAR, sources JAR, javadoc JAR
+  • Optional signing (only when MAVEN_USERNAME env var is set)
+
+
+DOCUMENTATION FILES
+═══════════════════════════════════════════════════════════════════════════
+
+✓ PUBLISHING_SETUP_SUMMARY.md
+  Complete summary of the publishing setup
+  - Configuration overview
+  - How to publish (3 methods)
+  - Required environment variables
+  - Available Gradle tasks
+  - Repository locations
+  - Next steps for first-time publishers
+
+✓ QUICK_START_PUBLISH.md
+  Quick reference guide
+  - First-time setup checklist
+  - 7-step publishing process
+  - GitHub Actions setup
+  - Troubleshooting tips
+  - Version numbering guide
+  - Useful links
+
+✓ MAVEN_CENTRAL_PUBLISHING.md
+  Comprehensive publishing guide
+  - Detailed prerequisites setup
+  - Step-by-step instructions
+  - Building and publishing procedures
+  - Releasing from staging
+  - Gradle tasks reference
+  - Extensive troubleshooting section
+  - Configuration options
+
+
+SCRIPTS
+═══════════════════════════════════════════════════════════════════════════
+
+✓ publish-to-maven-central.sh (executable)
+  Interactive publishing script with menu options
+  
+  Usage: ./publish-to-maven-central.sh
+  
+  Options:
+  1) Full publish to Maven Central staging
+  2) Test local publish only (no auth required)
+  3) Build and sign only
+  4) Exit
+  
+  Features:
+  - Prerequisites checking
+  - Colored output
+  - Error handling
+  - Local artifact verification
+  - Next steps guidance
+
+
+GITHUB ACTIONS WORKFLOW
+═══════════════════════════════════════════════════════════════════════════
+
+✓ .github/workflows/publish-maven-central.yml
+  Automated CI/CD workflow for publishing
+  
+  Trigger: Push a tag (e.g., git tag v1.0.0 && git push origin v1.0.0)
+  
+  Steps:
+  1. Checkout code
+  2. Setup Java 21
+  3. Import GPG key
+  4. Extract version from tag
+  5. Update build.gradle.kts with version
+  6. Build project
+  7. Publish to Maven Central
+  8. Create GitHub release
+  
+  Required GitHub Secrets:
+  - MAVEN_USERNAME
+  - MAVEN_PASSWORD
+  - GPG_SIGNING_KEY (base64 encoded)
+  - GPG_SIGNING_PASSWORD
+
+
+TEMPLATES & EXAMPLES
+═══════════════════════════════════════════════════════════════════════════
+
+✓ gradle.properties.template
+  Template for local Gradle configuration
+  Shows how to set up:
+  - Sonatype credentials
+  - GPG signing configuration
+  - JVM settings
+  - Two configuration approaches (properties vs environment variables)
+
+
+GENERATED ARTIFACTS (during local publish)
+═══════════════════════════════════════════════════════════════════════════
+
+Location: command-api/build/repos/releases/dev/evokerking/command-api/1.0.0/
+
+Generated files:
+✓ command-api-1.0.0.jar                 Main library JAR
+✓ command-api-1.0.0-sources.jar         Source code JAR
+✓ command-api-1.0.0-javadoc.jar         API documentation JAR
+✓ command-api-1.0.0.pom                 Maven POM descriptor
+✓ command-api-1.0.0.module              Gradle module metadata
+✓ [files].asc                           GPG signatures (when signing enabled)
+✓ [files].md5                           MD5 checksums
+✓ [files].sha1                          SHA1 checksums
+✓ [files].sha256                        SHA256 checksums
+✓ [files].sha512                        SHA512 checksums
+
+Plus metadata files:
+✓ maven-metadata.xml                    Repository metadata
+✓ maven-metadata.xml.[hash]             Metadata checksums
+
+
+ENVIRONMENT VARIABLES
+═══════════════════════════════════════════════════════════════════════════
+
+For Publishing to Maven Central:
+
+MAVEN_USERNAME             Sonatype username
+MAVEN_PASSWORD             Sonatype authentication token (not regular password)
+GPG_SIGNING_KEY           Base64-encoded GPG private key
+GPG_SIGNING_PASSWORD      GPG key passphrase
+
+Export in shell:
+  export MAVEN_USERNAME=your_username
+  export MAVEN_PASSWORD=your_token
+  export GPG_SIGNING_KEY="$(gpg --armor --export-secret-keys KEY_ID | base64)"
+  export GPG_SIGNING_PASSWORD=your_passphrase
+
+Or set in ~/.gradle/gradle.properties:
+  mavenUsername=your_username
+  mavenPassword=your_token
+  signing.keyId=LAST_8_CHARS_OF_GPG_KEY
+  signing.password=your_passphrase
+
+
+GRADLE TASKS
+═══════════════════════════════════════════════════════════════════════════
+
+Build & Test:
+  gradle build -p command-api
+  gradle test -p command-api
+  gradle clean -p command-api
+
+Publishing:
+  gradle publishMavenJavaPublicationToLocalTestRepository -p command-api
+  gradle publishMavenJavaPublicationToMavenCentralRepository -p command-api
+  gradle publish -p command-api
+
+Signing:
+  gradle signMavenJavaPublication -p command-api
+
+Documentation:
+  gradle javadoc -p command-api
+  gradle javadocJar -p command-api
+
+
+PUBLISHING FLOW
+═══════════════════════════════════════════════════════════════════════════
+
+LOCAL TESTING (No Auth Required)
+├── gradle build
+├── gradle publishMavenJavaPublicationToLocalTestRepository
+└── Verify: command-api/build/repos/releases/
+
+GITHUB ACTIONS (Automatic on Tag Push)
+├── git tag v1.0.0
+├── git push origin v1.0.0
+├── GitHub Actions runs workflow
+├── Publishes to Maven Central
+└── Creates GitHub release
+
+MANUAL PUBLISH (Interactive)
+├── Set environment variables
+├── ./publish-to-maven-central.sh
+├── Choose option 1
+├── Publishes to Maven Central
+└── Follow next steps (release from staging)
+
+RELEASE FROM STAGING
+├── Login to https://s01.oss.sonatype.org
+├── Find devevokerking-XXXX repository
+├── Click "Close" (validates)
+├── Click "Release" (promotes)
+└── Wait 10-30 minutes for sync
+
+VERIFY RELEASE
+├── Check Maven Central
+├── Create sample project
+├── Add to build.gradle
+└── Verify it resolves
+
+
+REPOSITORY LOCATIONS
+═══════════════════════════════════════════════════════════════════════════
+
+Sonatype OSS Staging:
+  https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/
+
+Maven Central Repository:
+  https://repo1.maven.org/maven2/dev/evokerking/command-api/
+
+MVN Repository (Searchable):
+  https://mvnrepository.com/artifact/dev.evokerking/command-api
+
+Local Test Repository:
+  command-api/build/repos/releases/
+
+
+QUICK COMMANDS
+═══════════════════════════════════════════════════════════════════════════
+
+# Test locally
+gradle publishMavenJavaPublicationToLocalTestRepository -p command-api
+
+# Run interactive script
+chmod +x publish-to-maven-central.sh
+./publish-to-maven-central.sh
+
+# Publish with environment variables
+export MAVEN_USERNAME=user
+export MAVEN_PASSWORD=token
+export GPG_SIGNING_KEY="$(gpg --armor --export-secret-keys KEY_ID | base64)"
+export GPG_SIGNING_PASSWORD=pass
+gradle publish -p command-api
+
+# GitHub Actions (automatic on tag)
+git tag v1.0.0
+git push origin v1.0.0
+
+
+TROUBLESHOOTING QUICK LINKS
+═══════════════════════════════════════════════════════════════════════════
+
+See MAVEN_CENTRAL_PUBLISHING.md for:
+  - GPG Signature Issues
+  - Authentication Failures
+  - Network Timeouts
+  - Version Already Released
+  - Staging Repository Not Closing
+
+See QUICK_START_PUBLISH.md for:
+  - "Command not found: gpg"
+  - "401 Unauthorized"
+  - "No secret key"
+  - Version Already Exists
+  - Staging Repository Not Closing
+
+
+NEXT STEPS
+═══════════════════════════════════════════════════════════════════════════
+
+1. First Time:
+   - Read QUICK_START_PUBLISH.md
+   - Follow "For First-Time Publishers"
+   - Set up Sonatype account
+   - Generate GPG key
+
+2. For Testing:
+   - gradle publishMavenJavaPublicationToLocalTestRepository -p command-api
+   - Check artifacts in command-api/build/repos/releases/
+
+3. For Publishing:
+   - GitHub Actions: git tag v1.0.0 && git push origin v1.0.0
+   - Manual: ./publish-to-maven-central.sh
+   - Direct: gradle publish -p command-api (with env vars)
+
+4. After Publishing:
+   - Release from https://s01.oss.sonatype.org
+   - Verify on Maven Central
+   - Update version for next release
+
