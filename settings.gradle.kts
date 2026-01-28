@@ -18,7 +18,6 @@ plugins {
 }
 
 rootProject.name = "codespaces-blank"
-include("app")
 include("command-api")
-
+include("evoker-api")
 include("app")

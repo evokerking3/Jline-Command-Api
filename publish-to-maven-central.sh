@@ -47,18 +47,41 @@ check_prerequisites() {
     fi
     print_info "✓ GPG found: $(gpg --version | head -1)"
     
-    # Check environment variables
-    if [ -z "$MAVEN_USERNAME" ]; then
-        print_warning "MAVEN_USERNAME not set. Will use gradle.properties"
-    else
-        print_info "✓ MAVEN_USERNAME is set"
+    # Prefer credentials from Gradle properties (user or project) over environment variables.
+    GRADLE_PROP_PATHS=("$HOME/.gradle/gradle.properties" "./gradle.properties" "./.gradle/gradle.properties")
+    for p in "${GRADLE_PROP_PATHS[@]}"; do
+        if [ -f "$p" ]; then
+            mvUser=$(grep -E '^mavenUsername=' "$p" | cut -d'=' -f2- | tr -d '\r')
+            mvPass=$(grep -E '^mavenPassword=' "$p" | cut -d'=' -f2- | tr -d '\r')
+            if [ -n "$mvUser" ] && [ -n "$mvPass" ]; then
+                export MAVEN_USERNAME="$mvUser"
+                export MAVEN_PASSWORD="$mvPass"
+                print_info "✓ Loaded Maven credentials from $p (overrides env)"
+                break
+            fi
+        fi
+    done
+
+    # If Maven credentials still missing, warn (env may provide them)
+    if [ -z "$MAVEN_USERNAME" ] || [ -z "$MAVEN_PASSWORD" ]; then
+        if [ -n "$MAVEN_USERNAME" ] && [ -n "$MAVEN_PASSWORD" ]; then
+            print_info "✓ MAVEN_USERNAME and MAVEN_PASSWORD are set in environment"
+        else
+            print_warning "Maven credentials not found in gradle.properties or environment"
+        fi
     fi
-    
-    if [ -z "$MAVEN_PASSWORD" ]; then
-        print_warning "MAVEN_PASSWORD not set. Will use gradle.properties"
-    else
-        print_info "✓ MAVEN_PASSWORD is set"
-    fi
+
+    # Prefer signing.password from gradle.properties (override env) if present
+    for p in "${GRADLE_PROP_PATHS[@]}"; do
+        if [ -f "$p" ]; then
+            signPass=$(grep -E '^signing.password=' "$p" | cut -d'=' -f2- | tr -d '\r')
+            if [ -n "$signPass" ]; then
+                export GPG_SIGNING_PASSWORD="$signPass"
+                print_info "✓ Loaded signing password from $p (overrides env)"
+                break
+            fi
+        fi
+    done
 }
 
 build_project() {
@@ -90,8 +113,31 @@ test_local_publish() {
 
 sign_artifacts() {
     print_info "Signing artifacts..."
-    gradle signMavenJavaPublication -p command-api 
-    print_info "✓ Artifacts signed"
+    # Only attempt signing non-interactively if an in-memory key is available
+    # (GPG_SIGNING_KEY env) or a `signing.key` entry exists in gradle.properties.
+    GRADLE_PROP_PATHS=("$HOME/.gradle/gradle.properties" "./gradle.properties" "./.gradle/gradle.properties")
+    foundKey=0
+    if [ -n "$GPG_SIGNING_KEY" ]; then
+        foundKey=1
+    else
+        for p in "${GRADLE_PROP_PATHS[@]}"; do
+            if [ -f "$p" ]; then
+                keyVal=$(grep -E '^signing.key=' "$p" | cut -d'=' -f2- | tr -d '\r')
+                if [ -n "$keyVal" ]; then
+                    foundKey=1
+                    break
+                fi
+            fi
+        done
+    fi
+
+    if [ "$foundKey" -eq 1 ]; then
+        gradle signMavenJavaPublication -p command-api 
+        print_info "✓ Artifacts signed"
+    else
+        print_warning "No in-memory signing key found in gradle.properties or GPG_SIGNING_KEY; skipping signing to avoid interactive gpg failures."
+        print_info "If you want automatic signing, set 'signing.key' in gradle.properties (base64) or GPG_SIGNING_KEY env var."
+    fi
 }
 
 show_next_steps() {
@@ -142,7 +188,14 @@ main() {
     echo "  3) Build and sign only"
     echo "  4) Exit"
     
-    read -p "Enter option (1-4): " option
+    # Allow non-interactive usage: first CLI arg or PUBLISH_MODE env var
+    if [ -n "$1" ]; then
+        option="$1"
+    elif [ -n "$PUBLISH_MODE" ]; then
+        option="$PUBLISH_MODE"
+    else
+        read -p "Enter option (1-4): " option
+    fi
     
     case $option in
         1)

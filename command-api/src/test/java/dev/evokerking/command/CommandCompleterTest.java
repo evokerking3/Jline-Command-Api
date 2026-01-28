@@ -1,6 +1,5 @@
 package dev.evokerking.command;
 
-import org.jline.reader.Candidate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

@@ -15,12 +15,15 @@ repositories {
     mavenCentral()
 }
 
+
+// Declare the dependencies for your application.
 dependencies {
     // Use JUnit test framework.
     testImplementation(libs.junit)
 
     // Project dependencies
     implementation(project(":command-api"))
+    implementation(project(":evoker-api"))
 
     // This dependency is used by the application.
     implementation(libs.guava)
@@ -43,6 +46,7 @@ application {
 
 tasks.jar {
     dependsOn(":command-api:jar")
+    dependsOn(":evoker-api:jar")
     manifest {
         attributes["Main-Class"] = "dev.evokerking.App"
     }

@@ -15,7 +15,6 @@ dependencies {
     testImplementation(libs.junit)
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     // Expose these to consumers of the API
-    api("org.jline:jline:3.30.0")
 }
 
 java {
@@ -30,18 +29,18 @@ tasks.named<Test>("test") {
     useJUnitPlatform()
 }
 
-// ============ Maven Publishing Configuration ============
+// ============ Maven Publishing Configuration ============ \\
 
 mavenPublishing {
     coordinates(
         groupId = "dev.evokerking",
-        artifactId = "command-api",
+        artifactId = "evoker-api",
         version = "1.0.0"
     )
     pom {
-        name.set("Command API")
-        description.set("A lightweight command framework with autocomplete support for building interactive CLI applications")
-        inceptionYear.set("2024")
+        name.set("Evoker API")
+        description.set("A set of lightweight utilities.")
+        inceptionYear.set("2026")
         url.set("https://github.com/evokerking3/command-api")
         licenses {
             license {
