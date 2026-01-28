@@ -14,7 +14,6 @@ repositories {
 dependencies {
     testImplementation(libs.junit)
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    // Expose these to consumers of the API
 }
 
 java {
