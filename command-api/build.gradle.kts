@@ -4,7 +4,7 @@
 
 plugins {
     `java-library`
-    id("com.vanniktech.maven.publish") version "0.36.0"
+    // id("com.vanniktech.maven.publish") version "0.36.0"
 }
 
 repositories {
@@ -32,6 +32,7 @@ tasks.named<Test>("test") {
 
 // ============ Maven Publishing Configuration ============
 
+/*
 mavenPublishing {
     coordinates(
         groupId = "dev.evokerking",
@@ -84,3 +85,4 @@ mavenPublishing {
 
     signAllPublications()
 }
+*/
